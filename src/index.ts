@@ -13,6 +13,11 @@ const emailAddressesForGroup = (
     .filter(({ groups }) => groups.includes(group))
     .map(({ emailAddress }) => emailAddress);
 
+const emailAddressesForType = (config: EmailConfig[], type: string): string[] =>
+  config
+    .filter(({ type: t }) => t === type)
+    .map(({ emailAddress }) => emailAddress);
+
 const getGroupsFromConfig = (config: EmailConfig[]): Set<string> =>
   new Set(config.flatMap(({ groups }) => groups));
 
@@ -85,7 +90,7 @@ export default {
         const { emailAddress, type } = config;
         const emailsToForward =
           type === "child"
-            ? [emailAddress, ...emailAddressesForGroup(emailConfig, "parents")]
+            ? [emailAddress, ...emailAddressesForType(emailConfig, "parent")]
             : [emailAddress];
         await forwardEmails(emailsToForward);
         return;
