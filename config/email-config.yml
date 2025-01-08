@@ -1,0 +1,40 @@
+- domain: my-domain.io
+  config:
+    - aliases:
+        - john
+        - jacksr
+        - senior
+      emailAddress: johnsmith@email.com
+      groups:
+        - kids
+        - parents
+        - family
+        - school
+      type: parent
+    - aliases:
+        - jill
+        - mom
+      emailAddress: jillsmith@email.com
+      groups:
+        - kids
+        - parents
+        - family
+        - school
+        - basketball
+      type: parent
+    - aliases:
+        - sally
+      emailAddress: sallysmith@email.com
+      groups:
+        - kids
+        - family
+      type: child
+    - aliases:
+        - jack
+        - jackjr
+        - jr
+      emailAddress: jacksmith@email.com
+      groups:
+        - kids
+        - family
+      type: child

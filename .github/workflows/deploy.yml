@@ -1,0 +1,48 @@
+name: Deploy Email Forwarding Worker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    env:
+      TESTING: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install js-yaml
+        run: npm install js-yaml
+
+      - name: Convert YAML to JSON
+        id: convert_yaml
+        run: |
+          node -e "
+            const fs = require('fs'); 
+            const yaml = require('js-yaml'); 
+            const data = yaml.load(fs.readFileSync('config/email-config.yml', 'utf8')); 
+            fs.writeFileSync('config/email-config.json', JSON.stringify(data, null, 2)); 
+            console.log('::set-output name=config::' + JSON.stringify(data).replace(/\n/g, ''));
+          "
+        shell: bash
+      - name: Deploy
+        if: ${{ env.TESTING == 'false' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: email-forwarding-worker
+          secrets: |
+            EMAIL_CONFIG
+        env:
+          EMAIL_CONFIG: ${{ steps.convert_yaml.outputs.config }}
