@@ -9,12 +9,13 @@ is pushed to (or merged into) the main branch.
 > **Table of Contents**  
 > 1. [Overview](#overview)  
 > 2. [Features](#features)  
-> 3. [Prerequisites](#prerequisites)  
-> 4. [Getting Started](#getting-started)  
-> 5. [Usage](#usage)  
-> 6. [Deployment](#deployment)  
-> 7. [Contributing](#contributing)  
-> 8. [License](#license)
+> 3. [F.A.Q.](#faq)  
+> 4. [Prerequisites](#prerequisites)  
+> 5. [Getting Started](#getting-started)  
+> 6. [Usage](#usage)  
+> 7. [Deployment](#deployment)  
+> 8. [Contributing](#contributing)  
+> 9. [License](#license)
 
 ## Overview
 
@@ -22,6 +23,8 @@ This project enables you to:
 
 - Seamlessly create email aliases (e.g. `support@yourdomain.com` → `yourrealemail@example.com`).
 - Define group addresses (e.g. `team@yourdomain.com` → multiple recipients).
+- Create child aliases (e.g. `sally@yourdomain.com` → `sally@example.com`, `parent1@example.com`, and `parent2@example.com`).
+- Create easily identifiable spam aliases (e.g. `john.localgym@yourdomain.com` → `john@example.com`).
 - Automate routing logic through a single Cloudflare Worker.
 - Maintain your email forwarding rules via code in a single repository.
 
@@ -36,6 +39,54 @@ manual configuration in traditional email forwarding solutions.
 - **Automated Management**: Update routing rules simply by pushing changes to this repository.  
 - **Scalable**: Cloudflare’s edge network handles large volumes of email with minimal latency.  
 - **Secure & Configurable**: Use environment variables to store secrets. TLS/SSL is handled by Cloudflare’s infrastructure.
+
+## F.A.Q.
+
+Q: Why use this project?  
+
+A: This project simplifies the management of email forwarding rules for your
+domain(s) by allowing you to define those rules in code and deploy them
+automatically.
+
+Q: How does this project work?  
+
+A: This project uses a Cloudflare Worker, set as a destination for a catch-all
+address, to listen for incoming emails and route them to the appropriate real
+inbox(es) based on the rules you define.
+
+Q: How do I define the routing rules?
+
+A: You define the routing rules in a YAML file. The GitHub Action in this
+project will automatically convert the YAML into JSON for the Worker to
+consume.
+
+Q: How do I test the routing rules?
+
+A: You can run tests locally to ensure the routing rules are correct. The
+GitHub Action in this project will also run the tests automatically when a PR
+is opened.
+
+Q: How do I deploy the routing rules?
+
+A: The GitHub Action in this project will automatically deploy the routing
+rules to Cloudflare when code is pushed to the main branch. You can also
+manually deploy the routing rules using the `wrangler` CLI.
+
+Q: What happens when I receive an email that matches an alias, but has a dot in
+it and then a bunch of other letters and numbers?
+
+A: The Worker will ignore the dot and any characters that follow it when
+matching the alias. The mail will be forwarded to the correct email address,
+but maintain the dot and characters in the alias. This allows you to create
+spam aliases that are unique to each sender, but still route to the same email.
+GMail does something similar with the `+` character, but it's easily
+identifiable and can be stripped out by the sender.
+
+Q: Can I create an alias for my child, and have the email forwarded to my child
+and me?
+
+A: Yes, by default any alias that has the "child" type will be forwarded to
+that alias' email address as well as any parent aliases.
 
 ## Prerequisites
 
