@@ -101,6 +101,20 @@ describe("Email Worker", () => {
     expect(message.setReject).not.toHaveBeenCalled();
   });
 
+  it("handles a group alias with plus signs and the suffix correctly", async () => {
+    const message = {
+      to: "kids+1234@my-domain.com",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com");
+    expect(message.forward).toHaveBeenCalledWith("sallysample@email.com");
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
+
   it("rejects email when configuration is invalid", async () => {
     env.EMAIL_CONFIG = "{ invalid json }";
 

@@ -26,7 +26,7 @@ const getAliasFromAliases = (
   aliases: string[] | Set<string>,
 ): string | null => {
   for (const alias of aliases) {
-    if (account.startsWith(`${alias}.`)) return alias;
+    if (account.startsWith(`${alias}.`) || account.startsWith(`${alias}+`)) return alias;
   }
   return null;
 };
@@ -36,7 +36,7 @@ const getGroupFromGroups = (
   groups: string[] | Set<string>,
 ): string | null => {
   for (const group of groups) {
-    if (account.startsWith(`${group}.`)) return group;
+    if (account.startsWith(`${group}.`) || account.startsWith(`${group}+`)) return group;
   }
   return null;
 };
@@ -99,7 +99,7 @@ export default {
       await message.setReject("Recipient not allowed");
     };
 
-    // Handle alias-with-dot based logic
+    // Handle alias-with-delimiter based logic
     const aliasMatch = getAliasFromAliases(
       accountForRecipient,
       emailConfig.flatMap(({ aliases }) => aliases),
@@ -112,7 +112,7 @@ export default {
       if (matchingConfig) return await processEmailConfig(matchingConfig);
     }
 
-    // Handle group-with-dot based logic
+    // Handle group-with-delimiter based logic
     const groupMatch = getGroupFromGroups(accountForRecipient, allGroups);
     if (groupMatch) {
       await forwardEmails(emailAddressesForGroup(emailConfig, groupMatch));
