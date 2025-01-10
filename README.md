@@ -65,12 +65,12 @@ A: You can run tests locally to ensure the routing rules are correct. The GitHub
 
 <details>
 <summary>Q: How do I deploy the routing rules?</summary>
-A: The GitHub Action in this project will automatically deploy the routing rules to Cloudflare when code is pushed to the main branch. You can also manually deploy the routing rules using the `wrangler` CLI.
+A: The GitHub Action in this project will automatically deploy the routing rules to Cloudflare when code is pushed to the main branch. You can also manually deploy the routing rules using the <code>wrangler</code> CLI.
 </details>
 
 <details>
 <summary>Q: What happens when I receive an email that matches an alias, but has a dot in it and then a bunch of other letters and numbers?</summary>
-A: The Worker will ignore the dot and any characters that follow it when matching the alias. The mail will be forwarded to the correct email address, but maintain the dot and characters in the alias. This allows you to create spam aliases that are unique to each sender, but still route to the same email. Gmail does something similar with the `+` character, which is also supported, but beware, it's easily identifiable and can be stripped out by the sender.
+A: The Worker will ignore the dot and any characters that follow it when matching the alias. The mail will be forwarded to the correct email address, but maintain the dot and characters in the alias. This allows you to create spam aliases that are unique to each sender, but still route to the same email. Gmail does something similar with the <code>+</code> character, which is also supported, but beware, it's easily identifiable and can be stripped out by the sender.
 </details>
 
 <details>
