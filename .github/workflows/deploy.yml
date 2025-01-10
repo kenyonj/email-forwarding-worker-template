@@ -26,6 +26,7 @@ jobs:
 
       - name: Convert YAML to JSON
         id: convert_yaml
+        if: ${{ env.TESTING == 'false' }}
         run: |
           node -e "
             const fs = require('fs'); 
