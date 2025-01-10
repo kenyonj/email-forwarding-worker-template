@@ -33,7 +33,8 @@ jobs:
             const yaml = require('js-yaml'); 
             const data = yaml.load(fs.readFileSync('config/email-config.yml', 'utf8')); 
             fs.writeFileSync('config/email-config.json', JSON.stringify(data, null, 2)); 
-            console.log('::set-output name=config::' + JSON.stringify(data).replace(/\n/g, ''));
+            const output = JSON.stringify(data).replace(/\n/g, '');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `CONFIG=${output}\n`);
           "
         shell: bash
       - name: Deploy
@@ -45,4 +46,4 @@ jobs:
           secrets: |
             EMAIL_CONFIG
         env:
-          EMAIL_CONFIG: ${{ steps.convert_yaml.outputs.config }}
+          EMAIL_CONFIG: ${{ steps.convert_yaml.outputs.CONFIG }}
