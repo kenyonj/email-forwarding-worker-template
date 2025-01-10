@@ -106,7 +106,6 @@ that alias' email address as well as any parent aliases.
    git clone https://github.com/<your-username>/<your-repo-name>.git
    cd <your-repo-name>
    ```
-
 3. **Install Dependencies**  
    ```bash
    npm install
@@ -186,9 +185,11 @@ Using the worker:
            type: child
      ```
 
-   - You must save this YAML in a file called `config/email-config.yaml`.  
+   - You must save this YAML in a file called `config/email-config.yaml`. There
+     is a sample file in this repository that you can use as a starting point.
    - Commit and push your changes.  
-   - **GitHub Actions** will run the deployment process automatically and ensure your Worker code receives the correct JSON data.
+   - **GitHub Actions** will run the deployment process automatically and
+     ensure your Worker code receives the correct JSON data.
 
 2. **Running Tests Locally**  
    - If you only want to run tests locally:
