@@ -13,30 +13,12 @@ jobs:
       TESTING: true
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install js-yaml
-        run: npm install js-yaml
-
       - name: Convert YAML to JSON
-        id: convert_yaml
         if: ${{ env.TESTING == 'false' }}
-        run: |
-          node -e "
-            const fs = require('fs'); 
-            const yaml = require('js-yaml'); 
-            const data = yaml.load(fs.readFileSync('config/email-config.yml', 'utf8')); 
-            fs.writeFileSync('config/email-config.json', JSON.stringify(data, null, 2)); 
-            const output = JSON.stringify(data).replace(/\n/g, '');
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, `CONFIG=${output}\n`);
-          "
-        shell: bash
+        id: convert_yaml
+        uses: mikefarah/yq@v4.44.6
+        with:
+          cmd: yq eval -o=json config/email-config.yml
       - name: Deploy
         if: ${{ env.TESTING == 'false' }}
         uses: cloudflare/wrangler-action@v3
@@ -46,4 +28,4 @@ jobs:
           secrets: |
             EMAIL_CONFIG
         env:
-          EMAIL_CONFIG: ${{ steps.convert_yaml.outputs.CONFIG }}
+          EMAIL_CONFIG: ${{ steps.convert_yaml.outputs.result }}
