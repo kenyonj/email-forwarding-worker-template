@@ -44,49 +44,49 @@ manual configuration in traditional email forwarding solutions.
 ## F.A.Q.
 
 <details>
-<summary><strong>Q: Why use this project?</strong></summary>
+<summary><strong>Why use this project?</strong></summary>
 <blockquote>
 This project simplifies the management of email forwarding rules for your domain(s) by allowing you to define those rules in code and deploy them automatically.
 </blockquote>
 </details>
 
 <details>
-<summary><strong>Q: How does this project work?</strong></summary>
+<summary><strong>How does this project work?</strong></summary>
 <blockquote>
 This project uses a Cloudflare Worker, set as a destination for a catch-all address, to listen for incoming emails and route them to the appropriate real inbox(es) based on the rules you define.
 </blockquote>
 </details>
 
 <details>
-<summary><strong>Q: How do I define the routing rules?</strong></summary>
+<summary><strong>How do I define the routing rules?</strong></summary>
 <blockquote>
 You define the routing rules in a YAML file. The GitHub Action in this project will automatically convert the YAML into JSON for the Worker to consume.
 </blockquote>
 </details>
 
 <details>
-<summary><strong>Q: How do I test the routing rules?</strong></summary>
+<summary><strong>How do I test the routing rules?</strong></summary>
 <blockquote>
 You can run tests locally to ensure the routing rules are correct. The GitHub Action in this project will also run the tests automatically when a PR is opened.
 </blockquote>
 </details>
 
 <details>
-<summary><strong>Q: How do I deploy the routing rules?</strong></summary>
+<summary><strong>How do I deploy the routing rules?</strong></summary>
 <blockquote>
 The GitHub Action in this project will automatically deploy the routing rules to Cloudflare when code is pushed to the main branch. You can also manually deploy the routing rules using the <code>wrangler</code> CLI.
 </blockquote>
 </details>
 
 <details>
-<summary><strong>Q: What happens when I receive an email that matches an alias, but has a dot in it and then a bunch of other letters and numbers?</strong></summary>
+<summary><strong>What happens when I receive an email that matches an alias, but has a dot in it and then a bunch of other letters and numbers?</strong></summary>
 <blockquote>
 The Worker will ignore the dot and any characters that follow it when matching the alias. The mail will be forwarded to the correct email address, but maintain the dot and characters in the alias. This allows you to create spam aliases that are unique to each sender, but still route to the same email. Gmail does something similar with the <code>+</code> character, which is also supported, but beware, it's easily identifiable and can be stripped out by the sender.
 </blockquote>
 </details>
 
 <details>
-<summary><strong>Q: Can I create an alias for my child, and have the email forwarded to my child and me?</strong></summary>
+<summary><strong>Can I create an alias for my child, and have the email forwarded to my child and me?</strong></summary>
 <blockquote>
 Yes, by default any alias that has the "child" type will be forwarded to that alias' email address as well as any parent aliases.
 </blockquote>
