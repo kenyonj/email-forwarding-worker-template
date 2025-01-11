@@ -1,69 +1,22 @@
-interface EmailConfig {
-  aliases: string[];
-  emailAddress: string;
-  groups: string[];
-  type: string;
-}
-
-const emailAddressesForGroup = (
-  config: EmailConfig[],
-  group: string,
-): string[] =>
-  config
-    .filter(({ groups }) => groups.includes(group))
-    .map(({ emailAddress }) => emailAddress);
-
-const emailAddressesForType = (config: EmailConfig[], type: string): string[] =>
-  config
-    .filter(({ type: t }) => t === type)
-    .map(({ emailAddress }) => emailAddress);
-
-const getGroupsFromConfig = (config: EmailConfig[]): Set<string> =>
-  new Set(config.flatMap(({ groups }) => groups));
-
-const getAliasFromAliases = (
-  account: string,
-  aliases: string[] | Set<string>,
-): string | null => {
-  for (const alias of aliases) {
-    if (account.startsWith(`${alias}.`) || account.startsWith(`${alias}+`)) return alias;
-  }
-  return null;
-};
-
-const getGroupFromGroups = (
-  account: string,
-  groups: string[] | Set<string>,
-): string | null => {
-  for (const group of groups) {
-    if (account.startsWith(`${group}.`) || account.startsWith(`${group}+`)) return group;
-  }
-  return null;
-};
-
-const getConfigForDomain = (data: string, recipient: string) => {
-  try {
-    const parsedData = JSON.parse(data);
-    const domain = recipient.substring(recipient.indexOf("@") + 1);
-    const domainConfig = parsedData.find(
-      (item: { domain: string }) => item.domain === domain,
-    );
-    return domainConfig?.config || null;
-  } catch {
-    return null;
-  }
-};
+import type { EmailConfigType } from "./types";
+import { EmailConfig } from "./config";
+import { EmailProcessor } from "./processor";
 
 export default {
   async email(message: any, env: any): Promise<void> {
-    const recipient = message.to?.toLowerCase();
+    const config = new EmailConfig(message.to, env);
+    const configForDomain = config.configForDomain;
+    const processor = new EmailProcessor(config);
 
-    if (!recipient) {
+    if (!config.isValidRecipient) {
       await message.setReject("Recipient not allowed");
       return;
     }
 
-    const accountForRecipient = recipient.substring(0, recipient.indexOf("@"));
+    if (!configForDomain) {
+      await message.setReject("Server configuration error");
+      return;
+    }
 
     const forwardEmails = async (emails: string[]): Promise<void> => {
       for (const email of emails) {
@@ -71,66 +24,30 @@ export default {
       }
     };
 
-    const emailConfig: EmailConfig[] = getConfigForDomain(
-      env.EMAIL_CONFIG,
-      recipient,
-    );
-
-    if (!emailConfig) {
-      await message.setReject("Server configuration error");
-      return;
-    }
-
-    const allGroups = getGroupsFromConfig(emailConfig);
-
-    const processEmailConfig = async (
-      config: EmailConfig | undefined,
-    ): Promise<void> => {
-      if (config) {
-        const { emailAddress, type } = config;
-        const emailsToForward =
-          type === "child"
-            ? [emailAddress, ...emailAddressesForType(emailConfig, "parent")]
-            : [emailAddress];
-        await forwardEmails(emailsToForward);
-        return;
-      }
-
-      await message.setReject("Recipient not allowed");
-    };
-
     // Handle alias-with-delimiter based logic
-    const aliasMatch = getAliasFromAliases(
-      accountForRecipient,
-      emailConfig.flatMap(({ aliases }) => aliases),
-    );
-    if (aliasMatch) {
-      const alias = aliasMatch;
-      const matchingConfig = emailConfig.find(({ aliases }) =>
-        aliases.includes(alias),
+    if (config.targetAlias) {
+      const matchingConfig = configForDomain.find(({ aliases }) =>
+        aliases.includes(config.targetAlias || ""),
       );
-      if (matchingConfig) return await processEmailConfig(matchingConfig);
+
+      return await forwardEmails(processor.process(matchingConfig));
     }
 
     // Handle group-with-delimiter based logic
-    const groupMatch = getGroupFromGroups(accountForRecipient, allGroups);
-    if (groupMatch) {
-      await forwardEmails(emailAddressesForGroup(emailConfig, groupMatch));
-      return;
+    if (config.targetGroup) {
+      return await forwardEmails(config.emailAddressesForGroup(config.targetGroup));
     }
 
     // Handle standard recipient logic
-    const recipientConfig = emailConfig.find(({ aliases }) =>
-      aliases.includes(accountForRecipient),
-    );
-    if (recipientConfig) return await processEmailConfig(recipientConfig);
+    if (config.recipientConfig) {
+      return await forwardEmails(processor.process(config.recipientConfig));
+    }
 
     // Handle groups
-    if (allGroups.has(accountForRecipient)) {
-      await forwardEmails(
-        emailAddressesForGroup(emailConfig, accountForRecipient),
+    if (config.groups.has(config.recipientAccount)) {
+      return await forwardEmails(
+        config.emailAddressesForGroup(config.recipientAccount),
       );
-      return;
     }
 
     // Default rejection
