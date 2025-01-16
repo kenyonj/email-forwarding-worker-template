@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$(git branch --show-current)" != "main" ]; then
+  echo "You are not on the main branch. Please switch to the main branch and try again."
+  exit 1
+fi
+
+if ! git remote | grep -q template; then
+  #ask user if you'd like to add the remote
+  echo "You do not have a remote named 'template'. Would you like to add it? (y/n)"
+  read -r response
+
+  if [ "$response" != "y" ]; then
+    echo "Aborting..."
+    exit 1
+  fi
+
+  echo "Adding git remote for 'template'..."
+  git remote add template https://github.com/kenyonj/email-forwarding-worker-template.git
+fi
+
+echo "Fetching all remotes..."
+git fetch --all
+
+echo "Merging template/main into main..."
+git merge template/main --allow-unrelated-histories --no-ff --no-edit
