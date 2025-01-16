@@ -44,10 +44,10 @@ export class Processor {
 
   async _handleDelimitedTarget(): Promise<void> {
     if (this.config.targetIsGroup) {
-      return await this._forwardEmails(this.config.emailAddressesForGroup(this.config.targetFromRecipientWithDelimiter!));
+      return await this._forwardEmails(this.config.emailAddressesForGroup(this.config.target!));
     } else {
       const matchingConfig = this.configForDomain!.find(({ aliases }) =>
-        aliases.includes(this.config.targetFromRecipientWithDelimiter || ""),
+        aliases.includes(this.config.target || ""),
       );
 
       return await this._forwardEmails(this.config.emailsToForwardTo(matchingConfig));
