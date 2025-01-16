@@ -29,6 +29,15 @@ describe("Email Worker", () => {
             },
           ],
         },
+        {
+          domain: "myseconddomain.net",
+          config: [
+            {
+              aliases: ["funny", "joke"],
+              emailAddress: "serious@jokes.com",
+            },
+          ],
+        },
       ]),
     } as ProvidedEnv;
   });
@@ -145,5 +154,18 @@ describe("Email Worker", () => {
     expect(message.setReject).toHaveBeenCalledWith(
       "Server configuration error",
     );
+  });
+
+  it("works with other domains", async () => {
+    const message = {
+      to: "funny@myseconddomain.net",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("serious@jokes.com");
+    expect(message.setReject).not.toHaveBeenCalled();
   });
 });
