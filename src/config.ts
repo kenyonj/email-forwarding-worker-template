@@ -1,6 +1,6 @@
 import type { EmailConfigForDomainType } from "./types";
 
-export class EmailConfig {
+export class Config {
   readonly _recipient: string;
   readonly _data: string;
 
@@ -27,6 +27,20 @@ export class EmailConfig {
     return this.configForDomain.find(({ aliases }) => aliases.includes(this.recipientAccount));
   }
 
+  get targetIsGroup(): boolean {
+    return this.groups.has(this.target!);
+  }
+
+  get target(): string | null {
+    return this.targetFromRecipientWithDelimiter || this.recipientAccount
+  }
+
+  get groupEmailAddresses(): string[] {
+    if (!this.configForDomain) return [];
+
+    return this.emailAddressesForGroup(this.target!);
+  }
+
   get groups(): Set<string> {
     if (!this.configForDomain) return new Set();
 
@@ -39,17 +53,13 @@ export class EmailConfig {
     return this.configForDomain.flatMap(({ aliases }) => aliases);
   }
 
-  get targetAlias(): string | null {
-    for (const alias of this.aliases) {
-      if (this.recipientAccount.startsWith(`${alias}.`) || this.recipientAccount.startsWith(`${alias}+`)) return alias;
-    }
-
-    return null;
+  get possibleTargets(): string[] {
+    return [...this.aliases, ...this.groups];
   }
 
-  get targetGroup(): string | null {
-    for (const group of this.groups) {
-      if (this.recipientAccount.startsWith(`${group}.`) || this.recipientAccount.startsWith(`${group}+`)) return group;
+  get targetFromRecipientWithDelimiter(): string | null {
+    for (const target of this.possibleTargets) {
+      if (this.recipientAccount.startsWith(`${target}.`) || this.recipientAccount.startsWith(`${target}+`)) return target;
     }
 
     return null;
@@ -70,6 +80,17 @@ export class EmailConfig {
 
   get parentEmailAddresses(): string[] {
     return this.emailAddressesForType("parent");
+  }
+
+  emailsToForwardTo(matchingConfig: EmailConfigForDomainType | undefined): string[] {
+    if (!matchingConfig) return [];
+
+    const { emailAddress, type } = matchingConfig;
+    const emailsToForward = type === "child"
+      ? [emailAddress, ...this.parentEmailAddresses]
+      : [emailAddress];
+
+    return emailsToForward;
   }
 
   emailAddressesForType(type: string): string[] {
