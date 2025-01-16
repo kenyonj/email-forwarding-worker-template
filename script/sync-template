@@ -6,7 +6,6 @@ if [ "$(git branch --show-current)" != "main" ]; then
 fi
 
 if ! git remote | grep -q template; then
-  #ask user if you'd like to add the remote
   echo "You do not have a remote named 'template'. Would you like to add it? (y/n)"
   read -r response
 
