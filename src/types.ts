@@ -1,8 +1,3 @@
-export interface EmailConfigType {
-  config: EmailConfigForDomainType[];
-  domain: string;
-}
-
 export interface EmailConfigForDomainType {
   accounts: AccountsForConfigType[];
   delimiters: string[];
