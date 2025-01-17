@@ -1,4 +1,6 @@
-import type { EmailConfigForDomainType } from "./types";
+import type { AccountsForConfigType, EmailConfigForDomainType } from "./types";
+
+const DEFAULT_DELIMITERS = [".", "+"];
 
 export class Config {
   readonly _recipient: string;
@@ -21,10 +23,10 @@ export class Config {
     return this._recipient.substring(this._recipient.indexOf("@") + 1);
   }
 
-  get recipientConfig(): EmailConfigForDomainType | undefined {
-    if (!this.configForDomain) return undefined;
+  get recipientConfig(): AccountsForConfigType | undefined {
+    if (!this.accountsForDomain) return undefined;
 
-    return this.configForDomain.find(({ aliases }) => aliases.includes(this.recipientAccount));
+    return this.accountsForDomain.find(({ aliases }) => aliases.includes(this.recipientAccount));
   }
 
   get targetIsGroup(): boolean {
@@ -36,21 +38,21 @@ export class Config {
   }
 
   get groupEmailAddresses(): string[] {
-    if (!this.configForDomain) return [];
+    if (!this.accountsForDomain) return [];
 
     return this.emailAddressesForGroup(this.target!);
   }
 
   get groups(): Set<string> {
-    if (!this.configForDomain) return new Set();
+    if (!this.accountsForDomain) return new Set();
 
-    return new Set(this.configForDomain.flatMap(({ groups }: { groups: string[] }) => groups));
+    return new Set(this.accountsForDomain.flatMap(({ groups }: { groups: string[] }) => groups));
   }
 
   get aliases(): string[] {
-    if (!this.configForDomain) return [];
+    if (!this.accountsForDomain) return [];
 
-    return this.configForDomain.flatMap(({ aliases }) => aliases);
+    return this.accountsForDomain.flatMap(({ aliases }) => aliases);
   }
 
   get possibleTargets(): string[] {
@@ -58,31 +60,38 @@ export class Config {
   }
 
   get targetFromRecipientWithDelimiter(): string | null {
+    const delimiters = this.configForDomain?.delimiters || DEFAULT_DELIMITERS;
+
     for (const target of this.possibleTargets) {
-      if (this.recipientAccount.startsWith(`${target}.`) || this.recipientAccount.startsWith(`${target}+`)) return target;
+      if (delimiters.some((delimiter) => this.recipientAccount.startsWith(`${target}${delimiter}`))) return target;
     }
 
     return null;
   }
 
-  get configForDomain(): EmailConfigForDomainType[] | null {
+  get configForDomain(): EmailConfigForDomainType | null {
     try {
       const parsedData = JSON.parse(this._data);
       const domainConfig = parsedData.find(
         (item: { domain: string }) => item.domain === this.recipientDomain,
       );
 
-      return domainConfig?.config || null;
+      return domainConfig || null;
     } catch {
       return null;
     }
+  }
+
+  get accountsForDomain(): AccountsForConfigType[] | null {
+    if (!this.configForDomain) return null;
+    return this.configForDomain.accounts
   }
 
   get parentEmailAddresses(): string[] {
     return this.emailAddressesForType("parent");
   }
 
-  emailsToForwardTo(matchingConfig: EmailConfigForDomainType | undefined): string[] {
+  emailsToForwardTo(matchingConfig: AccountsForConfigType | undefined): string[] {
     if (!matchingConfig) return [];
 
     const { emailAddress, type } = matchingConfig;
@@ -94,17 +103,17 @@ export class Config {
   }
 
   emailAddressesForType(type: string): string[] {
-    if (!this.configForDomain) return [];
+    if (!this.accountsForDomain) return [];
 
-    return this.configForDomain
+    return this.accountsForDomain
       .filter(({ type: t }) => t === type)
       .map(({ emailAddress }) => emailAddress);
   }
 
   emailAddressesForGroup(group: string): string[] {
-    if (!this.configForDomain) return [];
+    if (!this.accountsForDomain) return [];
 
-    return this.configForDomain
+    return this.accountsForDomain
       .filter(({ groups }) => groups.includes(group))
       .map(({ emailAddress }) => emailAddress);
   }

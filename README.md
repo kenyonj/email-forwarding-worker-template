@@ -25,7 +25,9 @@ This project enables you to:
 - Define group addresses (e.g. `team@yourdomain.com` → multiple recipients).
 - Create child aliases (e.g. `sally@yourdomain.com` → `sally@example.com`, `parent1@example.com`, and `parent2@example.com`).
 - Create easily identifiable spam aliases (e.g. `john.localgym@yourdomain.com` → `john@example.com`).
-  - `+` is also a supported delimiter (like Gmail uses), and in the future I might support any delimiter through config.
+  - `+` is also a default supported delimiter (like Gmail uses), you can
+    configure your own delimiters in the config file. See
+    [config/email-config.yml.sample](config/email-config.yml.sample) for an example.
 - Automate routing logic through a single Cloudflare Worker.
 - Maintain your email forwarding rules via code in a single repository.
 

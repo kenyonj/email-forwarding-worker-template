@@ -1,4 +1,4 @@
-import type { EmailConfigForDomainType } from "./types";
+import type { AccountsForConfigType } from "./types";
 import { Config } from "./config";
 
 const REJECTION_MESSAGES = {
@@ -9,17 +9,17 @@ const REJECTION_MESSAGES = {
 export class Processor {
   readonly message: any;
   readonly config: Config;
-  readonly configForDomain: EmailConfigForDomainType[] | null;
+  readonly accountsForDomain: AccountsForConfigType[] | null;
 
   constructor(message: any, config: Config) {
     this.message = message;
     this.config = config;
-    this.configForDomain = config.configForDomain;
+    this.accountsForDomain = config.accountsForDomain;
   }
 
   async process(): Promise<void> {
     if (!this.config.isValidRecipient) return this._invalidRejection();
-    if (!this.configForDomain) return this._serverErrorRejection();
+    if (!this.accountsForDomain) return this._serverErrorRejection();
 
     if (this.config.targetFromRecipientWithDelimiter) return this._handleDelimitedTarget();
     if (this.config.recipientConfig) return this._handleSimpleAliasTarget();
@@ -46,7 +46,7 @@ export class Processor {
     if (this.config.targetIsGroup) {
       return await this._forwardEmails(this.config.emailAddressesForGroup(this.config.target!));
     } else {
-      const matchingConfig = this.configForDomain!.find(({ aliases }) =>
+      const matchingConfig = this.accountsForDomain!.find(({ aliases }) =>
         aliases.includes(this.config.target || ""),
       );
 
