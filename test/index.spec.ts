@@ -14,7 +14,7 @@ describe("Email Worker", () => {
       EMAIL_CONFIG: JSON.stringify([
         {
           domain: "my-domain.com",
-          config: [
+          accounts: [
             {
               aliases: ["one", "anotherone", "thisisanemail", "hello"],
               emailAddress: "sampleparent@email.com",
@@ -31,7 +31,7 @@ describe("Email Worker", () => {
         },
         {
           domain: "myseconddomain.net",
-          config: [
+          accounts: [
             {
               aliases: ["funny", "joke"],
               emailAddress: "serious@jokes.com",
@@ -93,6 +93,35 @@ describe("Email Worker", () => {
     await worker.email(message, env);
 
     expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com");
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
+
+  it("handles alias with delimiter from config correctly", async () => {
+    env.EMAIL_CONFIG = JSON.stringify([
+      {
+        domain: "wow.net",
+        accounts: [
+          {
+            aliases: ["hello"],
+            emailAddress: "my-real-email@example.com",
+          },
+        ],
+        delimiters: [
+          ".",
+          "+",
+          "-",
+        ],
+      },
+    ]);
+    const message = {
+      to: "hello-info@wow.net",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("my-real-email@example.com");
     expect(message.setReject).not.toHaveBeenCalled();
   });
 

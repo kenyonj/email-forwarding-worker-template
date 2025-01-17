@@ -1,5 +1,8 @@
 - domain: my-domain.io
-  config:
+  delimiters:
+    - '.'
+    - '+'
+  accounts:
     - aliases:
         - john
         - jacksr
