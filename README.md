@@ -27,7 +27,7 @@ This project enables you to:
 - Create easily identifiable spam aliases (e.g. `john.localgym@yourdomain.com` → `john@example.com`).
   - `+` is also a default supported delimiter (like Gmail uses), you can
     configure your own delimiters in the config file. See
-    config/email-config.yml.sample for an example.
+    [config/email-config.yml.sample] for an example.
 - Automate routing logic through a single Cloudflare Worker.
 - Maintain your email forwarding rules via code in a single repository.
 
