@@ -1,25 +1,38 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if [ "$(git branch --show-current)" != "main" ]; then
-  echo "You are not on the main branch. Please switch to the main branch and try again."
-  exit 1
-fi
+set -euo pipefail
 
-if ! git remote | grep -q template; then
-  echo "You do not have a remote named 'template'. Would you like to add it? (y/n)"
-  read -r response
-
-  if [ "$response" != "y" ]; then
-    echo "Aborting..."
+ensure_on_main_branch() {
+  local current_branch
+  current_branch="$(git branch --show-current)"
+  
+  if [[ "$current_branch" != "main" ]]; then
+    echo "You are not on the main branch. Please switch to 'main' and try again."
     exit 1
   fi
+}
 
-  echo "Adding git remote for 'template'..."
-  git remote add template https://github.com/kenyonj/email-forwarding-worker-template.git
-fi
+ensure_template_remote_exists() {
+  if ! git remote | grep -q '^template$'; then
+    echo "Remote 'template' not found. Would you like to add it? (y/n)"
+    read -r response
+    if [[ "$response" != "y" ]]; then
+      echo "Aborting..."
+      exit 1
+    fi
+
+    echo "Adding 'template' remote..."
+    git remote add template "https://github.com/kenyonj/email-forwarding-worker-template.git"
+  fi
+}
+
+ensure_on_main_branch
+ensure_template_remote_exists
 
 echo "Fetching all remotes..."
 git fetch --all
 
 echo "Merging template/main into main..."
 git merge template/main --allow-unrelated-histories --no-ff --no-edit
+
+echo "Done!"
