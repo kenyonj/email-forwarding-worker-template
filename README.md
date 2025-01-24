@@ -133,7 +133,7 @@ Yes, by default any alias that has the "child" type will be forwarded to that al
 
 Pre-requisites:
 
-0. Any email that you plan on forwarding to has to be added to your cloudflare account as a forwarding email address. You can use the "Add Verified Email to Cloudflare" action to add one by manually triggering the workflow: https://github.com/kenyonj/email-forwarding-worker-template/actions/workflows/add-email-to-cloudflare.yml
+0. Any email that you plan on forwarding to has to be added to your cloudflare account as a forwarding email address. You can use the "Add Verified Email to Cloudflare" action to add one by manually triggering the workflow: [email-forwarding-worker-template/actions/workflows/add-email-to-cloudflare.yml](actions/workflows/add-email-to-cloudflare.yml)
 
 1. Create a new email worker in your cloudflare account, under the target domain:
    https://dash.cloudflare.com/<ACCOUNT ID>/<DOMAIN>/email/routing/workers
