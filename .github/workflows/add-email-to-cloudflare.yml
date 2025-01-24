@@ -1,0 +1,28 @@
+name: Add Verified Email to Cloudflare
+
+on:
+  workflow_dispatch:
+    inputs:
+      email_address:
+        description: "Email address to verify"
+        required: true
+
+jobs:
+  add_email:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Add Verified Email to Cloudflare
+      env:
+        CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+        EMAIL_ADDRESS: ${{ github.event.inputs.email_address }}
+      run: |
+        curl https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/email/routing/addresses \
+          -H 'Content-Type: application/json' \
+          -H "X-Auth-Email: $CLOUDFLARE_EMAIL" \
+          -H "X-Auth-Key: $CLOUDFLARE_API_KEY" \
+          --data '{
+            "email": "'"$EMAIL_ADDRESS"'"
+          }'

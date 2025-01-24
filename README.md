@@ -125,10 +125,15 @@ Yes, by default any alias that has the "child" type will be forwarded to that al
        - Documentation for finding your account ID can be found [here](https://developers.cloudflare.com/fundamentals/setup/find-account-and-zone-ids/#find-account-id-workers-and-pages).
      - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API token or equivalent credentials  
        - Documentation for creating an API token can be found [here](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/).
+     - `CLOUDFLARE_EMAIL`: The email account that is associated with your cloudflare account  
+     - `CLOUDFLARE_API_KEY`: Your Cloudflare API key  
+       - Documentation for viewing your global API key can be found [here](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#view-your-global-api-key).
 
 ## Usage
 
 Pre-requisites:
+
+0. Any email that you plan on forwarding to has to be added to your cloudflare account as a forwarding email address. You can use the "Add Verified Email to Cloudflare" action to add one by manually triggering the workflow: 
 
 1. Create a new email worker in your cloudflare account, under the target domain:
    https://dash.cloudflare.com/<ACCOUNT ID>/<DOMAIN>/email/routing/workers
