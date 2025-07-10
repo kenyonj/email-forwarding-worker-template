@@ -16,7 +16,7 @@ jobs:
       - name: Convert YAML to JSON
         if: ${{ env.TESTING == 'false' }}
         id: convert_yaml
-        uses: mikefarah/yq@v4.45.3
+        uses: mikefarah/yq@v4.46.1
         with:
           cmd: yq eval -o=json config/email-config.yml
       - name: Deploy
