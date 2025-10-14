@@ -48,7 +48,7 @@ export class Config {
   get groups(): Set<string> {
     if (!this.accountsForDomain) return new Set();
 
-    return new Set(this.accountsForDomain.flatMap(({ groups }: { groups: string[] }) => 
+    return new Set(this.accountsForDomain.flatMap(({ groups }: { groups?: string[] }) => 
       (groups || []).map(g => g.toLowerCase())
     ));
   }
