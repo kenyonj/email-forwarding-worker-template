@@ -197,4 +197,73 @@ describe("Email Worker", () => {
     expect(message.forward).toHaveBeenCalledWith("serious@jokes.com");
     expect(message.setReject).not.toHaveBeenCalled();
   });
+
+  it("handles uppercase alias correctly", async () => {
+    const message = {
+      to: "SALLY@my-domain.com",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("sallysample@email.com");
+    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com");
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
+
+  it("handles mixed case alias correctly", async () => {
+    const message = {
+      to: "SaLLy@my-domain.com",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("sallysample@email.com");
+    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com");
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
+
+  it("handles uppercase group alias correctly", async () => {
+    const message = {
+      to: "KIDS@my-domain.com",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com");
+    expect(message.forward).toHaveBeenCalledWith("sallysample@email.com");
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
+
+  it("handles uppercase alias with suffix correctly", async () => {
+    const message = {
+      to: "HELLO.info@my-domain.com",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com");
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
+
+  it("handles mixed case group alias with suffix correctly", async () => {
+    const message = {
+      to: "KiDs.1234@my-domain.com",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com");
+    expect(message.forward).toHaveBeenCalledWith("sallysample@email.com");
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
 });

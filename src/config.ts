@@ -26,11 +26,13 @@ export class Config {
   get recipientConfig(): AccountsForConfigType | undefined {
     if (!this.accountsForDomain) return undefined;
 
-    return this.accountsForDomain.find(({ aliases }) => aliases.includes(this.recipientAccount));
+    return this.accountsForDomain.find(({ aliases }) => 
+      aliases.map(a => a.toLowerCase()).includes(this.recipientAccount.toLowerCase())
+    );
   }
 
   get targetIsGroup(): boolean {
-    return this.groups.has(this.target!);
+    return this.groups.has(this.target!.toLowerCase());
   }
 
   get target(): string | null {
@@ -46,13 +48,15 @@ export class Config {
   get groups(): Set<string> {
     if (!this.accountsForDomain) return new Set();
 
-    return new Set(this.accountsForDomain.flatMap(({ groups }: { groups: string[] }) => groups));
+    return new Set(this.accountsForDomain.flatMap(({ groups }: { groups: string[] }) => 
+      (groups || []).map(g => g.toLowerCase())
+    ));
   }
 
   get aliases(): string[] {
     if (!this.accountsForDomain) return [];
 
-    return this.accountsForDomain.flatMap(({ aliases }) => aliases);
+    return this.accountsForDomain.flatMap(({ aliases }) => aliases.map(a => a.toLowerCase()));
   }
 
   get possibleTargets(): string[] {
@@ -61,9 +65,10 @@ export class Config {
 
   get targetFromRecipientWithDelimiter(): string | null {
     const delimiters = this.configForDomain?.delimiters || DEFAULT_DELIMITERS;
+    const lowerRecipientAccount = this.recipientAccount.toLowerCase();
 
     for (const target of this.possibleTargets) {
-      if (delimiters.some((delimiter) => this.recipientAccount.startsWith(`${target}${delimiter}`))) return target;
+      if (delimiters.some((delimiter) => lowerRecipientAccount.startsWith(`${target}${delimiter}`))) return target;
     }
 
     return null;
@@ -113,8 +118,9 @@ export class Config {
   emailAddressesForGroup(group: string): string[] {
     if (!this.accountsForDomain) return [];
 
+    const lowerGroup = group.toLowerCase();
     return this.accountsForDomain
-      .filter(({ groups }) => groups.includes(group))
+      .filter(({ groups }) => (groups || []).map(g => g.toLowerCase()).includes(lowerGroup))
       .map(({ emailAddress }) => emailAddress);
   }
 }
