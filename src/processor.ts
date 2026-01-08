@@ -47,7 +47,7 @@ export class Processor {
       return await this._forwardEmails(this.config.emailAddressesForGroup(this.config.target!));
     } else {
       const matchingConfig = this.accountsForDomain!.find(({ aliases }) =>
-        aliases.includes(this.config.target || ""),
+        aliases.map(a => a.toLowerCase()).includes((this.config.target || "").toLowerCase()),
       );
 
       return await this._forwardEmails(this.config.emailsToForwardTo(matchingConfig));
