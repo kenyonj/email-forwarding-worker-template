@@ -42,7 +42,33 @@ describe("Email Worker", () => {
     } as ProvidedEnv;
   });
 
-  it("forwards email for a valid alias", async () => {
+  it("forwards email for a valid alias regardless of case", async () => {
+    const message = {
+      to: "SaLlY@MY-DOMAIN.COM",
+      setReject: vi.fn(),
+      forward: vi.fn(),
+    };
+
+    await worker.email(message, env);
+
+    expect(message.forward).toHaveBeenCalledWith("sallysample@email.com");
+    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com"); // Parent email for "child"
+    expect(message.setReject).not.toHaveBeenCalled();
+  });
+
+  it("matches aliases configured with mixed casing", async () => {
+    env.EMAIL_CONFIG = JSON.stringify([
+      {
+        domain: "MY-DOMAIN.COM",
+        accounts: [
+          {
+            aliases: ["SaLlY"],
+            emailAddress: "sallysample@email.com",
+            groups: [],
+          },
+        ],
+      },
+    ]);
     const message = {
       to: "sally@my-domain.com",
       setReject: vi.fn(),
@@ -52,7 +78,6 @@ describe("Email Worker", () => {
     await worker.email(message, env);
 
     expect(message.forward).toHaveBeenCalledWith("sallysample@email.com");
-    expect(message.forward).toHaveBeenCalledWith("sampleparent@email.com"); // Parent email for "child"
     expect(message.setReject).not.toHaveBeenCalled();
   });
 
@@ -69,9 +94,9 @@ describe("Email Worker", () => {
     expect(message.setReject).toHaveBeenCalledWith("Recipient not allowed");
   });
 
-  it("forwards email for a group alias", async () => {
+  it("forwards email for a group alias regardless of case", async () => {
     const message = {
-      to: "kids@my-domain.com",
+      to: "KiDs@my-domain.com",
       setReject: vi.fn(),
       forward: vi.fn(),
     };
@@ -83,9 +108,9 @@ describe("Email Worker", () => {
     expect(message.setReject).not.toHaveBeenCalled();
   });
 
-  it("handles alias with suffix correctly", async () => {
+  it("handles an alias with a suffix regardless of case", async () => {
     const message = {
-      to: "hello.info@my-domain.com",
+      to: "HeLLo.InFo@my-domain.com",
       setReject: vi.fn(),
       forward: vi.fn(),
     };
@@ -125,9 +150,9 @@ describe("Email Worker", () => {
     expect(message.setReject).not.toHaveBeenCalled();
   });
 
-  it("handles a group alias with suffix correctly", async () => {
+  it("handles a group alias with a suffix regardless of case", async () => {
     const message = {
-      to: "kids.1234@my-domain.com",
+      to: "KiDs.1234@my-domain.com",
       setReject: vi.fn(),
       forward: vi.fn(),
     };

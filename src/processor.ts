@@ -46,11 +46,13 @@ export class Processor {
     if (this.config.targetIsGroup) {
       return await this._forwardEmails(this.config.emailAddressesForGroup(this.config.target!));
     } else {
-      const matchingConfig = this.accountsForDomain!.find(({ aliases }) =>
-        aliases.includes(this.config.target || ""),
+      const matchingConfig = this.config.accountForAlias(
+        this.config.target || "",
       );
 
-      return await this._forwardEmails(this.config.emailsToForwardTo(matchingConfig));
+      return await this._forwardEmails(
+        this.config.emailsToForwardTo(matchingConfig),
+      );
     }
   }
 
