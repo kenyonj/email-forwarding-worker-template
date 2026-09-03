@@ -12,7 +12,7 @@ jobs:
     env:
       TESTING: true
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Convert YAML to JSON
         if: ${{ env.TESTING == 'false' }}
         id: convert_yaml
