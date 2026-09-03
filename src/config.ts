@@ -1,6 +1,7 @@
 import type { AccountsForConfigType, EmailConfigForDomainType } from "./types";
 
 const DEFAULT_DELIMITERS = [".", "+"];
+const normalize = (value: string): string => value.toLowerCase();
 
 export class Config {
   readonly _recipient: string;
@@ -16,17 +17,15 @@ export class Config {
   }
 
   get recipientAccount(): string {
-    return this._recipient.substring(0, this._recipient.indexOf("@"));
+    return normalize(this._recipient.substring(0, this._recipient.indexOf("@")));
   }
 
   get recipientDomain(): string {
-    return this._recipient.substring(this._recipient.indexOf("@") + 1);
+    return normalize(this._recipient.substring(this._recipient.indexOf("@") + 1));
   }
 
   get recipientConfig(): AccountsForConfigType | undefined {
-    if (!this.accountsForDomain) return undefined;
-
-    return this.accountsForDomain.find(({ aliases }) => aliases.includes(this.recipientAccount));
+    return this.accountForAlias(this.recipientAccount);
   }
 
   get targetIsGroup(): boolean {
@@ -46,13 +45,19 @@ export class Config {
   get groups(): Set<string> {
     if (!this.accountsForDomain) return new Set();
 
-    return new Set(this.accountsForDomain.flatMap(({ groups }: { groups: string[] }) => groups));
+    return new Set(
+      this.accountsForDomain.flatMap(({ groups }) =>
+        groups?.map(normalize) || [],
+      ),
+    );
   }
 
   get aliases(): string[] {
     if (!this.accountsForDomain) return [];
 
-    return this.accountsForDomain.flatMap(({ aliases }) => aliases);
+    return this.accountsForDomain.flatMap(({ aliases }) =>
+      aliases.map(normalize),
+    );
   }
 
   get possibleTargets(): string[] {
@@ -73,7 +78,8 @@ export class Config {
     try {
       const parsedData = JSON.parse(this._data);
       const domainConfig = parsedData.find(
-        (item: { domain: string }) => item.domain === this.recipientDomain,
+        (item: { domain: string }) =>
+          normalize(item.domain) === this.recipientDomain,
       );
 
       return domainConfig || null;
@@ -89,6 +95,18 @@ export class Config {
 
   get parentEmailAddresses(): string[] {
     return this.emailAddressesForType("parent");
+  }
+
+  accountForAlias(alias: string): AccountsForConfigType | undefined {
+    if (!this.accountsForDomain) return undefined;
+
+    const normalizedAlias = normalize(alias);
+
+    return this.accountsForDomain.find(({ aliases }) =>
+      aliases.some(
+        (configuredAlias) => normalize(configuredAlias) === normalizedAlias,
+      ),
+    );
   }
 
   emailsToForwardTo(matchingConfig: AccountsForConfigType | undefined): string[] {
@@ -113,8 +131,15 @@ export class Config {
   emailAddressesForGroup(group: string): string[] {
     if (!this.accountsForDomain) return [];
 
+    const normalizedGroup = normalize(group);
+
     return this.accountsForDomain
-      .filter(({ groups }) => groups.includes(group))
+      .filter(({ groups }) =>
+        groups?.some(
+          (configuredGroup) =>
+            normalize(configuredGroup) === normalizedGroup,
+        ),
+      )
       .map(({ emailAddress }) => emailAddress);
   }
 }
